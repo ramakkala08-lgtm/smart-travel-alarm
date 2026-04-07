@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Smart Travel Alarm</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Smart Travel Alarm</p>
+        <h1>Your bus stop guardian</h1>
+        <p class="description">Get a loud alert before your stop arrives so you never miss your destination.</p>
+      </div>
+      <button id="darkModeToggle" class="icon-button" aria-label="Toggle dark mode">🌙</button>
+    </header>
+
+    <main class="grid-layout">
+      <section class="panel panel-primary">
+        <div class="panel-header">
+          <div>
+            <p class="panel-label">Destination</p>
+            <h2>Where are you getting off?</h2>
+          </div>
+        </div>
+
+        <form id="destinationForm" class="destination-form">
+          <label class="input-group">
+            <span>Destination name</span>
+            <input id="destinationInput" type="text" placeholder="Enter destination manually" autocomplete="off" required>
+          </label>
+
+          <div class="row gap-sm">
+            <label class="input-group flex-grow">
+              <span>Alert distance</span>
+              <select id="thresholdSelect">
+                <option value="1000">1 km</option>
+                <option value="800">800 m</option>
+                <option value="600">600 m</option>
+                <option value="500" selected>500 m</option>
+                <option value="300">300 m</option>
+              </select>
+            </label>
+            <button id="setDestinationBtn" class="button button-secondary" type="submit">Set Destination</button>
+          </div>
+        </form>
+
+        <div class="status-grid">
+          <article class="status-card">
+            <span>Status</span>
+            <strong id="trackingStatus">Stopped</strong>
+          </article>
+          <article class="status-card">
+            <span>Distance left</span>
+            <strong id="distanceText">—</strong>
+          </article>
+          <article class="status-card">
+            <span>Destination</span>
+            <strong id="destinationNameText">No destination selected</strong>
+          </article>
+        </div>
+
+        <div class="controls-row">
+          <button id="startBtn" class="button button-primary" type="button">Start Tracking</button>
+          <button id="stopBtn" class="button button-muted" type="button" disabled>Stop</button>
+        </div>
+
+        <div class="notes-block" id="notesBlock">
+          <p><strong>Tip:</strong> Allow location access and keep your phone unlocked for best results. The alarm will vibrate and beep loudly when you approach your destination.</p>
+        </div>
+      </section>
+
+      <section class="panel panel-map" aria-label="Map preview">
+        <div class="panel-header">
+          <div>
+            <p class="panel-label">Live travel view</p>
+            <h2>Track your route in real time</h2>
+          </div>
+        </div>
+
+        <div class="map-card">
+          <div id="mapPlaceholder" class="map-placeholder">
+            <div class="map-message">
+              <strong>Map visualization</strong>
+              <p>A dynamic route preview will appear here once tracking starts.</p>
+            </div>
+          </div>
+          <div class="map-chips">
+            <span id="mapMarkerCurrent">Current</span>
+            <span id="mapMarkerDestination">Destination</span>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="alarmOverlay" class="alarm-overlay hidden" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="alarm-panel alarm-active-panel">
+      <span class="alarm-badge">STOP REACHED</span>
+      <h2>WAKE UP!</h2>
+      <p>You are within the alert radius. Stop the alarm and prepare to exit.</p>
+      <button id="dismissAlarmBtn" class="button button-alert" type="button">Stop Alarm</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
