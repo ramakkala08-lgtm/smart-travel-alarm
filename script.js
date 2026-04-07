@@ -25,6 +25,7 @@ const elements = {
   dismissAlarmBtn: document.getElementById('dismissAlarmBtn'),
   darkModeToggle: document.getElementById('darkModeToggle'),
   mapPlaceholder: document.getElementById('mapPlaceholder'),
+  alarmCountDisplay: document.getElementById('alarmCountDisplay'),
 };
 
 const app = {
@@ -32,6 +33,7 @@ const app = {
     this.bindEvents();
     this.updateStatus();
     this.applySystemTheme();
+    this.initAlarmCounter();
   },
 
   bindEvents() {
@@ -57,6 +59,11 @@ const app = {
     this.updateThemeIcon();
   },
 
+  initAlarmCounter() {
+    const alarmCount = parseInt(localStorage.getItem('alarmCount') || '0', 10);
+    elements.alarmCountDisplay.textContent = `🔔 Users Helped: ${alarmCount}`;
+  },
+
   updateThemeIcon() {
     const currentTheme = document.documentElement.dataset.theme || 'dark';
     elements.darkModeToggle.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
@@ -80,6 +87,11 @@ const app = {
     if (!name) {
       this.showNote('Please enter a destination name before starting tracking.');
       return;
+    }
+
+    // Track destination set event
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'destination_set');
     }
 
     this.showNote('Acquiring current location to set a destination...');
@@ -126,6 +138,11 @@ const app = {
     if (!state.destination) {
       this.showNote('Set your destination first.');
       return;
+    }
+
+    // Track start tracking event
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'start_tracking_clicked');
     }
 
     if (!state.destination.coordinates) {
@@ -224,6 +241,13 @@ const app = {
     elements.alarmOverlay.classList.remove('hidden');
     this.startVibration();
     this.startBeep();
+
+    // Increment alarm counter
+    const currentCount = parseInt(localStorage.getItem('alarmCount') || '0', 10);
+    const newCount = currentCount + 1;
+    localStorage.setItem('alarmCount', newCount.toString());
+    elements.alarmCountDisplay.textContent = `🔔 Users Helped: ${newCount}`;
+
     console.log('Alarm triggered');
     this.showNote('Stop reached — wake up! The alarm is now active.');
   },
