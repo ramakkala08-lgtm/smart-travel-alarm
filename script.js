@@ -101,8 +101,8 @@ const app = {
       try {
         const position = await this.getCurrentPositionAsync();
         coordinates = {
-          lat: position.coords.latitude + 0.0012,
-          lon: position.coords.longitude + 0.0012,
+          lat: position.coords.latitude + 0.0005,
+          lon: position.coords.longitude + 0.0005,
         };
       } catch (error) {
         console.warn('Could not read current position, using fallback destination coordinates.', error);
@@ -116,6 +116,7 @@ const app = {
       coordinates,
     };
 
+    console.log('Destination set to:', coordinates);
     this.updateSelectedDestination();
     this.showNote(`Destination set: ${name}. Ready to start tracking.`);
   },
@@ -196,6 +197,7 @@ const app = {
     const destinationCoordinates = state.destination.coordinates;
 
     const remaining = this.calculateDistance(currentCoordinates, destinationCoordinates);
+    console.log('Current position:', currentCoordinates, 'Distance to destination:', remaining, 'meters');
     elements.distanceText.textContent = this.formatDistance(remaining);
     this.updateStatusCards();
     this.updateMapPreview(currentCoordinates, destinationCoordinates);
