@@ -36,26 +36,27 @@
           </div>
         </div>
 
-        <form id="destinationForm" class="destination-form">
+        <div class="destination-setup">
           <label class="input-group">
             <span>Destination name</span>
-            <input id="destinationInput" type="text" placeholder="Enter destination manually" autocomplete="off" required>
+            <input id="destinationInput" type="text" placeholder="Enter destination (e.g., Central Station)" autocomplete="off" required>
           </label>
+          <button id="setDestinationBtn" class="button button-primary" type="button">📍 Set Destination</button>
+          <div id="destinationStatus" class="status-text">Destination not set</div>
+        </div>
 
-          <div class="row gap-sm">
-            <label class="input-group flex-grow">
-              <span>Alert distance</span>
-              <select id="thresholdSelect">
-                <option value="1000">1 km</option>
-                <option value="800">800 m</option>
-                <option value="600">600 m</option>
-                <option value="500" selected>500 m</option>
-                <option value="300">300 m</option>
-              </select>
-            </label>
-            <button id="setDestinationBtn" class="button button-secondary" type="submit">Set Destination</button>
-          </div>
-        </form>
+        <div class="row gap-sm">
+          <label class="input-group flex-grow">
+            <span>Alert distance</span>
+            <select id="thresholdSelect">
+              <option value="1000">1 km</option>
+              <option value="800">800 m</option>
+              <option value="600">600 m</option>
+              <option value="500" selected>500 m</option>
+              <option value="300">300 m</option>
+            </select>
+          </label>
+        </div>
 
         <div class="status-grid">
           <article class="status-card">

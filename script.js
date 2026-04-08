@@ -11,7 +11,6 @@ const state = {
 let audioContext, beepInterval, vibrationInterval;
 
 const elements = {
-  destinationForm: document.getElementById('destinationForm'),
   destinationInput: document.getElementById('destinationInput'),
   thresholdSelect: document.getElementById('thresholdSelect'),
   setDestinationBtn: document.getElementById('setDestinationBtn'),
@@ -26,6 +25,7 @@ const elements = {
   darkModeToggle: document.getElementById('darkModeToggle'),
   mapPlaceholder: document.getElementById('mapPlaceholder'),
   alarmCountDisplay: document.getElementById('alarmCountDisplay'),
+  destinationStatus: document.getElementById('destinationStatus'),
 };
 
 const app = {
@@ -34,10 +34,11 @@ const app = {
     this.updateStatus();
     this.applySystemTheme();
     this.initAlarmCounter();
+    this.updateSelectedDestination();
   },
 
   bindEvents() {
-    elements.destinationForm.addEventListener('submit', this.onSetDestination.bind(this));
+    elements.setDestinationBtn.addEventListener('click', this.onSetDestination.bind(this));
     elements.startBtn.addEventListener('click', this.onStartTracking.bind(this));
     elements.stopBtn.addEventListener('click', this.onStopTracking.bind(this));
     elements.dismissAlarmBtn.addEventListener('click', this.dismissAlarm.bind(this));
@@ -47,6 +48,7 @@ const app = {
 
   updateSelectedDestination() {
     elements.destinationNameText.textContent = state.destination ? state.destination.name : 'No destination selected';
+    elements.destinationStatus.textContent = state.destination ? 'Destination set' : 'Destination not set';
   },
 
   applySystemTheme() {
@@ -85,7 +87,7 @@ const app = {
     event.preventDefault();
     const name = elements.destinationInput.value.trim();
     if (!name) {
-      this.showNote('Please enter a destination name before starting tracking.');
+      this.showNote('Please enter a destination name.');
       return;
     }
 
@@ -94,31 +96,46 @@ const app = {
       gtag('event', 'destination_set');
     }
 
-    this.showNote('Acquiring current location to set a destination...');
+    this.showNote('Searching for destination...');
 
-    let coordinates = { lat: 37.7749, lon: -122.4194 };
-    if (navigator.geolocation) {
-      try {
-        const position = await this.getCurrentPositionAsync();
-        coordinates = {
-          lat: position.coords.latitude + 0.0005,
-          lon: position.coords.longitude + 0.0005,
-        };
-      } catch (error) {
-        console.warn('Could not read current position, using fallback destination coordinates.', error);
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(name)}`);
+      const data = await response.json();
+
+      if (!data || data.length === 0) {
+        console.log('Invalid location');
+        this.showNote('Location not found. Try a different name.');
+        elements.destinationStatus.textContent = 'Destination not set';
+        return;
       }
-    } else {
-      console.warn('Geolocation is not available; using fallback destination coordinates.');
+
+      const coordinates = {
+        lat: parseFloat(data[0].lat),
+        lon: parseFloat(data[0].lon),
+      };
+
+      if (isNaN(coordinates.lat) || isNaN(coordinates.lon)) {
+        console.log('Invalid location');
+        this.showNote('Location not found. Try a different name.');
+        elements.destinationStatus.textContent = 'Destination not set';
+        return;
+      }
+
+      state.destination = {
+        name,
+        coordinates,
+      };
+
+      console.log('Destination set correctly');
+      elements.destinationStatus.textContent = 'Destination set';
+      this.updateSelectedDestination();
+      this.showNote(`Destination set: ${name}. Ready to start tracking.`);
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      console.log('Invalid location');
+      this.showNote('Failed to find location. Try again.');
+      elements.destinationStatus.textContent = 'Destination not set';
     }
-
-    state.destination = {
-      name,
-      coordinates,
-    };
-
-    console.log('Destination set to:', coordinates);
-    this.updateSelectedDestination();
-    this.showNote(`Destination set: ${name}. Ready to start tracking.`);
   },
 
   getCurrentPositionAsync() {
