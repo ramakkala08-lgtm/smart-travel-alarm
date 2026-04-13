@@ -441,4 +441,109 @@ const app = {
   },
 };
 
-app.init();
+app.init();/* ================== CUSTOM AUTOCOMPLETE (SAFE + CLEAN) ================== */
+
+function initCustomAutocomplete() {
+  const input = document.getElementById("destinationInput");
+
+  // Create dropdown container
+  const dropdown = document.createElement("div");
+  dropdown.style.position = "absolute";
+  dropdown.style.background = "#0f172a";
+  dropdown.style.color = "#fff";
+  dropdown.style.width = "100%";
+  dropdown.style.maxHeight = "220px";
+  dropdown.style.overflowY = "auto";
+  dropdown.style.borderRadius = "10px";
+  dropdown.style.zIndex = "9999";
+  dropdown.style.boxShadow = "0 10px 25px rgba(0,0,0,0.5)";
+  dropdown.style.marginTop = "5px";
+
+  input.parentElement.style.position = "relative";
+  input.parentElement.appendChild(dropdown);
+
+  let debounceTimer;
+
+  input.addEventListener("input", () => {
+    clearTimeout(debounceTimer);
+
+    const value = input.value.trim();
+
+    // Minimum 3 chars
+    if (value.length < 3) {
+      dropdown.innerHTML = "";
+      return;
+    }
+
+    debounceTimer = setTimeout(() => {
+      const service = new google.maps.places.AutocompleteService();
+
+      service.getPlacePredictions(
+        { input: value },
+        (predictions, status) => {
+          dropdown.innerHTML = "";
+
+          if (!predictions || status !== "OK") return;
+
+          predictions.slice(0, 5).forEach((p) => {
+            const item = document.createElement("div");
+
+            item.textContent = p.description;
+            item.style.padding = "12px";
+            item.style.cursor = "pointer";
+            item.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+            item.style.fontSize = "0.9rem";
+
+            item.onmouseenter = () => {
+              item.style.background = "rgba(255,255,255,0.1)";
+            };
+
+            item.onmouseleave = () => {
+              item.style.background = "transparent";
+            };
+
+            item.onclick = () => {
+              input.value = p.description;
+              dropdown.innerHTML = "";
+
+              const placesService = new google.maps.places.PlacesService(document.createElement("div"));
+
+              placesService.getDetails(
+                { placeId: p.place_id },
+                (place, status) => {
+                  if (!place || !place.geometry) return;
+
+                  const lat = place.geometry.location.lat();
+                  const lon = place.geometry.location.lng();
+
+                  // SAFE integration with your existing system
+                  state.destination = {
+                    name: p.description,
+                    coordinates: { lat, lon }
+                  };
+
+                  app.updateSelectedDestination();
+                  app.showNote("Destination selected ✔ (autocomplete)");
+                }
+              );
+            };
+
+            dropdown.appendChild(item);
+          });
+        }
+      );
+    }, 300); // debounce
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener("click", (e) => {
+    if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.innerHTML = "";
+    }
+  });
+}
+
+window.addEventListener("load", initCustomAutocomplete);
+
+/* ================== END ================== */
+
